@@ -8,8 +8,8 @@ from torch.optim.lr_scheduler import CosineAnnealingLR
 import matplotlib.pyplot as plt
 
 
-batch_size = 128
-block_size = 128
+batch_size = 128 #how many independent sequences will be processed in parallel
+block_size = 128 #max content lenght for prediction
 n_embd = 512
 n_head = 8
 n_layer = 12
@@ -35,21 +35,28 @@ class CharDataset(Dataset):
         data_size, vocab_size = len(data), len(chars)
         print('data has %d characters, %d unique.' % (data_size, vocab_size))
 
+        #string to integer
         self.stoi = { ch:i for i,ch in enumerate(chars) }
+        #integer to string
         self.itos = { i:ch for i,ch in enumerate(chars) }
         self.vocab_size = vocab_size
         self.data_size = data_size
         self.batch_size = batch_size
+
+        #encoding data into indices and storing it to tensor
         data_ix = torch.tensor([self.stoi[c] for c in data], dtype=torch.long)
+
+        # splitting data into train and validation set
         n = int(0.9 * len(data_ix))
         self.train_data = data_ix[:n]
         self.val_data = data_ix[n:]
         self.device = device
 
-
+    #number of unique chars
     def get_vocab_size(self):
         return self.vocab_size
 
+    #number of training samples available
     def __len__(self):
         return len(self.data) - self.N
 
@@ -275,7 +282,7 @@ while step <= max_iters:
 model.eval()
 seed = "O God, O God!"
 input_ids = torch.tensor([[dataset.stoi.get(c, 0) for c in seed]], dtype=torch.long).to(device)
-out = model.generate(input_ids, max_new_tokens=400, temperature=0.8, top_k=100, do_sample=True)
+out = model.generate(input_ids, max_new_tokens=400, temperature=0.8, top_k=15, do_sample=True)
 generated = "".join(dataset.itos[int(i)] for i in out[0].tolist())
 print("\nGenerated Text\n")
 print(generated)
